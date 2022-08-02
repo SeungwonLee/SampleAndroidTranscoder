@@ -81,8 +81,17 @@ public class VideoTrackTranscoder implements TrackTranscoder {
             inputFormat.setInteger(MediaFormatExtraConstants.KEY_ROTATION_DEGREES, 0);
         }
         mDecoderOutputSurfaceWrapper = new OutputSurface();
+        String mimeType = inputFormat.getString(MediaFormat.KEY_MIME);
+        if (mimeType == null) {
+            throw new RuntimeException("mimeType is null.");
+        }
         try {
-            mDecoder = MediaCodec.createDecoderByType(inputFormat.getString(MediaFormat.KEY_MIME));
+            // For dolby-vision for HDR10.
+            if (mimeType.equals("video/dolby-vision")) {
+                mDecoder = MediaCodec.createByCodecName("c2.exynos.hevc.decoder");
+            } else {
+                mDecoder = MediaCodec.createDecoderByType(mimeType);
+            }
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
